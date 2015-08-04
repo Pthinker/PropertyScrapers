@@ -102,7 +102,7 @@ def main():
             if res == -1:
                 logger.info("Doesnt Exist")
 
-                if int(math.abs(last_fail_id-property_id)) == 1:
+                if int(math.fabs(last_fail_id-property_id)) == 1:
                     not_found_count += 1
                 else:
                     not_found_count = 1
