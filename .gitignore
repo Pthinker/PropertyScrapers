@@ -55,4 +55,5 @@ docs/_build/
 
 # PyBuilder
 target/
->>>>>>> 11e7734de252e95e195042faf103be7c414d21b6
+
+settings.py
