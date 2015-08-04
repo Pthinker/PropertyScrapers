@@ -78,16 +78,14 @@ def scrape_single_property(property_id):
     prop.save()
     return 1
 
-def is_running(process):
-    s = subprocess.Popen(["ps", "axw"], stdout=subprocess.PIPE)
-    for x in s.stdout:
-        if re.search(process, x):
-            return True
-
-    return False
+def is_running():
+    if len(os.popen( "ps -aef | grep -i 'ucp_scraper.py' | grep -v 'grep' | awk '{ print $3 }'" ).read().strip().split( '\n' ) ) > 0:
+        return True
+    else:
+        return False
 
 def main():
-    if is_running("ucp_scraper.py"):
+    if is_running():
         logger.info('Still running, exit!')
         sys.exit(0)
 
