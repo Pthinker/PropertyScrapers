@@ -1,5 +1,8 @@
 import os
 import sys
+import math
+import re
+import subprocess
 
 import requests
 from requests.packages.urllib3 import disable_warnings
@@ -28,8 +31,8 @@ def fetch_max_property_id_scraped():
     try:
         max_property_id = models.UnclaimedProperty.objects.latest('property_id').property_id
     except ObjectDoesNotExist:
-        logger.info('\tNo Data Exists. Setting Default to 979650000')
-        max_property_id = 979650000
+        logger.info('\tNo Data Exists. Setting Default to 970000000')
+        max_property_id = 970000000
     return max_property_id
 
 
@@ -64,8 +67,10 @@ def scrape_single_property(property_id):
     prop.owners_name = strip_spaces(soup.find('td', id='OwnersNameData').text.strip())
     prop.owners_address = strip_spaces(soup.find('td', id='ReportedAddressData').text.strip())
     prop.type_of_property = strip_spaces(soup.find('td', id='PropertyTypeData').text.strip())
-    try: prop.cash_reported_text = strip_spaces(soup.find('td', id='ctl00_ContentPlaceHolder1_CashReportData').text.strip())
-    except AttributeError: return 0
+    try:
+        prop.cash_reported_text = strip_spaces(soup.find('td', id='ctl00_ContentPlaceHolder1_CashReportData').text.strip())
+    except AttributeError:
+        return 0
     prop.cash_reported = extract_cash_amount(prop.cash_reported_text)
     if prop.cash_reported < 8000:
         return 0
@@ -73,8 +78,20 @@ def scrape_single_property(property_id):
     prop.save()
     return 1
 
+def is_running(process):
+    s = subprocess.Popen(["ps", "axw"], stdout=subprocess.PIPE)
+    for x in s.stdout:
+        if re.search(process, x):
+            return True
+
+    return False
 
 def main():
+    if is_running("ucp_scraper.py"):
+        logger.info('Still running, exit!')
+        sys.exit(0)
+
+    last_fail_id = -1
     try:
         logger.info('Starting Scraper...')
         max_property_id = fetch_max_property_id_scraped()
@@ -85,14 +102,17 @@ def main():
             logger.info('Fetching Property %s' % property_id)
             res = scrape_single_property(property_id)
             if res == -1:
-                logger.info("\tDoesnt Exist")
-                not_found_count += 1
-            else:
-                not_found_count = 0
-            if not_found_count > 5000:
+                logger.info("Doesnt Exist")
+
+                if math.abs(last_fail_id-property_id) == 1:
+                    not_found_count += 1
+                else:
+                    not_found_count = 1
+                last_fail_id = property_id
+
+            if not_found_count > 100:
                 logger.info("That's all folks!")
                 break
-
     except:
         logger.exception(sys.exc_info())
     finally:
@@ -102,6 +122,4 @@ def main():
 if __name__ == '__main__':
     disable_warnings()
     main()
-    # scrape_single_property('979650460')
-    # scrape_single_property('979650461')
-    # scrape_single_property('979679041')
+
