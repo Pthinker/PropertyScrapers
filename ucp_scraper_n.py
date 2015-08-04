@@ -74,7 +74,7 @@ def scrape_single_property(property_id):
     prop.save()
     return 1
 
-def is_running(process):
+def is_running():
     if len(os.popen("ps -aef | grep -i 'ucp_scraper_n.py' | grep -v 'grep' | awk '{ print $3 }'").read().strip().split('\n')) > 1:
         return True
     else:
