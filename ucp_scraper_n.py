@@ -1,9 +1,8 @@
 import os
 import sys
 import math
-import re
-import subprocess
-
+import random
+import time
 import requests
 from requests.packages.urllib3 import disable_warnings
 from bs4 import BeautifulSoup
@@ -30,8 +29,8 @@ def fetch_max_property_id_scraped():
     try:
         max_property_id = models.NTypeUnclaimedProperty.objects.latest('property_id').property_id
     except ObjectDoesNotExist:
-        logger.info('No Data Exists. Setting Default to 1780000')
-        max_property_id = 1780000
+        logger.info('No Data Exists. Setting Default to 32639900')
+        max_property_id = 32639900
     return max_property_id
 
 
@@ -52,6 +51,7 @@ def extract_cash_amount(cash):
 
 
 def scrape_single_property(property_id):
+    time.sleep(random.randint(1, 6))
     url = 'https://ucpi.sco.ca.gov/ucp/NoticeDetails.aspx?propertyRecID=%s' % property_id
     r = requests.get(url, headers=headers)
     if len(r.history) > 0:
@@ -61,7 +61,12 @@ def scrape_single_property(property_id):
 
     prop = models.NTypeUnclaimedProperty()
     prop.property_id = property_id
-    prop.notification_date = soup.find('em').text.rstrip('*').strip()
+    notification_date = soup.find('em').text.rstrip('*').strip()
+
+    if notification_date == "as soon as possible":
+        return 0
+
+    prop.notification_date = notification_date
     prop.business_contact_information = soup.find('td', id='HolderNameData').text.strip()
     prop.type_of_property = strip_spaces(soup.find('td', id='PropertyTypeData').text.strip())
     prop.cash_reported = strip_spaces(soup.find('td', id='AmountData').text.strip())
@@ -105,7 +110,7 @@ def main():
                     not_found_count = 1
                 last_fail_id = property_id
 
-            if not_found_count > 1000:
+            if not_found_count > 500:
                 logger.info("That's all folks!")
                 break
     except:
