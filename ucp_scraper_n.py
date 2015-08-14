@@ -51,7 +51,7 @@ def extract_cash_amount(cash):
 
 
 def scrape_single_property(property_id):
-    time.sleep(random.randint(1, 6))
+    time.sleep(random.randint(0, 3))
     url = 'https://ucpi.sco.ca.gov/ucp/NoticeDetails.aspx?propertyRecID=%s' % property_id
     r = requests.get(url, headers=headers)
     if len(r.history) > 0:

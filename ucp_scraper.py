@@ -30,8 +30,8 @@ def fetch_max_property_id_scraped():
     try:
         max_property_id = models.UnclaimedProperty.objects.latest('property_id').property_id
     except ObjectDoesNotExist:
-        logger.info('\tNo Data Exists. Setting Default to 979981019')
-        max_property_id = 979981019
+        logger.info('\tNo Data Exists. Setting Default to 980000000')
+        max_property_id = 980000000
     return max_property_id
 
 
@@ -52,7 +52,7 @@ def extract_cash_amount(cash):
 
 
 def scrape_single_property(property_id):
-    time.sleep(random.randint(1, 6))
+    time.sleep(random.randint(0, 2))
     url = 'https://ucpi.sco.ca.gov/ucp/PropertyDetails.aspx?propertyID=%s' % property_id
     r = requests.get(url, headers=headers)
     if len(r.history) > 0:
