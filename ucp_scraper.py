@@ -52,7 +52,7 @@ def extract_cash_amount(cash):
 
 
 def scrape_single_property(property_id):
-    time.sleep(random.randint(0, 2))
+    time.sleep(random.randint(0, 4))
     url = 'https://ucpi.sco.ca.gov/ucp/PropertyDetails.aspx?propertyID=%s' % property_id
     r = requests.get(url, headers=headers)
     if len(r.history) > 0:
@@ -98,7 +98,15 @@ def main():
         while True:
             property_id += 1
             logger.info('Fetching Property %s' % property_id)
-            res = scrape_single_property(property_id)
+
+            try:
+                res = scrape_single_property(property_id)
+            except requests.ConnectionError:
+                property_id -= 1
+                logger.error("Connection error, sleep 10 minutes...")
+                time.sleep(600)
+                continue
+
             if res == -1:
                 logger.info("Doesnt Exist")
 
