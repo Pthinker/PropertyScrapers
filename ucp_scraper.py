@@ -116,7 +116,7 @@ def main():
                     not_found_count = 1
                 last_fail_id = property_id
 
-            if not_found_count > 5000:
+            if not_found_count > 50000:
                 logger.info("That's all folks!")
                 break
     except:
