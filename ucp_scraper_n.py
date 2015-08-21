@@ -100,7 +100,15 @@ def main():
         while True:
             property_id += 1
             logger.info('Fetching Property %s' % property_id)
-            res = scrape_single_property(property_id)
+
+            try:
+                res = scrape_single_property(property_id)
+            except requests.ConnectionError:
+                property_id -= 1
+                logger.error("Connection error, sleep 10 minutes...")
+                time.sleep(600)
+                continue
+
             if res == -1:
                 logger.info("Doesnt Exist")
 
@@ -110,7 +118,7 @@ def main():
                     not_found_count = 1
                 last_fail_id = property_id
 
-            if not_found_count > 5000:
+            if not_found_count > 50000:
                 logger.info("That's all folks!")
                 break
     except:
