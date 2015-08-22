@@ -29,8 +29,8 @@ def fetch_max_property_id_scraped():
     try:
         max_property_id = models.NTypeUnclaimedProperty.objects.latest('property_id').property_id
     except ObjectDoesNotExist:
-        logger.info('No Data Exists. Setting Default to 32640487')
-        max_property_id = 32640487
+        logger.info('No Data Exists. Setting Default to 1')
+        max_property_id = 1
     return max_property_id
 
 
